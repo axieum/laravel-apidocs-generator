@@ -23,10 +23,15 @@ class ApiDocsServiceProvider extends ServiceProvider
 
         // Views
         $this->loadViewsFrom(__DIR__ . '/views', 'apidocs');
-
         $this->publishes([
             __DIR__ . '/views' => resource_path('views/vendor/apidocs')
         ], ['apidocs', 'views']);
+
+        // Config
+        $this->mergeConfigFrom(__DIR__ . '/config/apidocs.php', 'apidocs');
+        $this->publishes([
+            __DIR__ . '/config' => config_path()
+        ], ['apidocs', 'config']);
     }
 
     /**
