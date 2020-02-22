@@ -1,0 +1,26 @@
+{
+    "name": "axieum/laravel-apidocs-generator",
+    "type": "library",
+    "description": "Laravel API Documentation Generator through PHPDocs",
+    "homepage": "https://github.com/Axieum/laravel-apidocs-generator",
+    "keywords": [
+        "library",
+        "laravel",
+        "documentation",
+        "docs",
+        "api",
+        "markdown"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Axieum",
+            "email": "7577851+Axieum@users.noreply.github.com",
+            "homepage": "https://github.com/Axieum",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "require-dev": {}
+}
