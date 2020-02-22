@@ -6,5 +6,11 @@ return [
         'body'     => 'body',
         'url'      => 'url',
         'response' => 'response'
+    ],
+    'routes'    => [
+        'rules' => [
+            'api/*'
+        ],
+        'hidden' => []
     ]
 ];

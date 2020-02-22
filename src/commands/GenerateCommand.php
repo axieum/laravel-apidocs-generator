@@ -2,6 +2,7 @@
 
 namespace Axieum\ApiDocs\Commands;
 
+use Axieum\ApiDocs\util\RouteHelper;
 use Illuminate\Console\Command;
 
 class GenerateCommand extends Command
@@ -40,16 +41,10 @@ class GenerateCommand extends Command
     {
         $this->info('Generating API documentation...');
 
-        // Prepare progress bar
-        $progress = $this->output->createProgressBar(/* max routes */ 1000000);
-        $progress->setRedrawFrequency(100);
+        ['rules' => $rules, 'hidden' => $hidden] = config('apidocs.routes');
+        $routes = RouteHelper::getRoutes($rules, $hidden);
 
-        $progress->start();
-        for ($i = 0; $i < $progress->getMaxSteps(); $i++)
-            $progress->advance();
-        $progress->finish();
-
-        $this->info(PHP_EOL . 'Successfully generated API documentation!');
+        $this->info(PHP_EOL . 'Successfully generated API documentation for ' . sizeof($routes) . ' routes!');
 
         return null;
     }
