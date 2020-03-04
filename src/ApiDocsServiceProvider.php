@@ -32,6 +32,12 @@ class ApiDocsServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/config' => config_path()
         ], ['apidocs', 'config']);
+
+        // Localisation
+        $this->loadTranslationsFrom(__DIR__ . '/lang', 'apidocs');
+        $this->publishes([
+            __DIR__ . '/lang' => resource_path('lang/vendor/apidocs')
+        ], ['apidocs', 'lang']);
     }
 
     /**

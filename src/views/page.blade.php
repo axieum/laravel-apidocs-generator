@@ -1,7 +1,7 @@
-@include('frontmatter')
+@include('apidocs::frontmatter')
 
 <ul>
-    @for($i=0;$i<5;$i++)
-        <li>{{ $i }}</li>
-    @endfor
+    @foreach($actionDocBlock->getTags() as $tag)
+        <li>{{ (string) $tag  }}</li>
+    @endforeach
 </ul>
