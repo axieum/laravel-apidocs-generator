@@ -28,6 +28,6 @@ class GroupMutator implements RouteMutator
                                 ->unique()
                                 ->toArray();
 
-        $route->setMeta('groups', $groups);
+        $route->setMeta('groups', $groups ?: [__('apidocs::docs.groups.default')]);
     }
 }
