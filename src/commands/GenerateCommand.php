@@ -5,10 +5,9 @@ namespace Axieum\ApiDocs\Commands;
 use Axieum\ApiDocs\mutators\RouteMutator;
 use Axieum\ApiDocs\preflight\PreflightDegree;
 use Axieum\ApiDocs\preflight\RoutePreflight;
+use Axieum\ApiDocs\util\DocRoute;
 use Axieum\ApiDocs\util\RouteHelper;
 use Illuminate\Console\Command;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
 use Illuminate\Support\Collection;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
@@ -83,22 +82,26 @@ class GenerateCommand extends Command
     }
 
     /**
-     * Fetches the routes for API documentation generation.
+     * Fetches the routes for API documentation generation and wraps it
+     * in a documented route ({@see DocRoute}).
      *
-     * @return Collection<Route> filtered route instances
+     * @return Collection<DocRoute> filtered documented route instances
      */
     private function getRoutes(): Collection
     {
         ['matches' => $matches, 'hides' => $hides] = config('apidocs.routes');
-        return RouteHelper::getRoutes($matches, $hides);
+        return RouteHelper::getRoutes($matches, $hides)
+                          ->map(function ($route) {
+                              return new DocRoute($route);
+                          });
     }
 
     /**
      * Performs route preflight checks to determine suitability for API
      * documentation generation, and hence filters valid routes.
      *
-     * @param Collection $routes matched route instances
-     * @return Collection<Route> route instances suitable for documentation
+     * @param Collection<DocRoute> $routes matched route instances
+     * @return Collection<DocRoute> route instances suitable for documentation
      */
     private function preflightRoutes(Collection $routes): Collection
     {
@@ -106,8 +109,8 @@ class GenerateCommand extends Command
         Assert::allIsAOf($checks, RoutePreflight::class);
 
         return $routes->filter(function ($route) use ($checks) {
-            /** @var Route $route */
-            $methods = implode(',', array_diff($route->methods(), [Request::METHOD_HEAD]));
+            /** @var DocRoute $route */
+            $methods = implode(',', $route->methods());
             $uri = $route->uri();
 
             foreach ($checks as $check) {
@@ -126,7 +129,7 @@ class GenerateCommand extends Command
     /**
      * Injects docblock(s) for the given routes (or null if not specified).
      *
-     * @param Collection $routes matched route instances
+     * @param Collection<DocRoute> $routes matched route instances
      */
     private function injectDocBlocks(Collection $routes): void
     {
@@ -135,15 +138,16 @@ class GenerateCommand extends Command
         $factory = DocBlockFactory::createInstance($tags);
 
         $routes->each(function ($route) use ($factory) {
-            $route->controllerDocBlock = RouteHelper::getControllerDocBlock($route, $factory);
-            $route->actionDocBlock = RouteHelper::getActionDocBlock($route, $factory);
+            /** @var DocRoute $route */
+            $route->addDocBlock('controller', RouteHelper::getControllerDocBlock($route->getRoute(), $factory));
+            $route->addDocBlock('action', RouteHelper::getActionDocBlock($route->getRoute(), $factory));
         });
     }
 
     /**
      * Mutates route instances prior to documentation generation.
      *
-     * @param Collection $routes checked route instances
+     * @param Collection<DocRoute> $routes checked route instances
      */
     private function mutateRoutes(Collection $routes): void
     {

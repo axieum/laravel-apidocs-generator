@@ -2,7 +2,7 @@
 
 namespace Axieum\ApiDocs\preflight;
 
-use Illuminate\Routing\Route;
+use Axieum\ApiDocs\util\DocRoute;
 
 interface RoutePreflight
 {
@@ -16,10 +16,10 @@ interface RoutePreflight
     /**
      * Checks a given route to determine if API Documentation can/should be generated.
      *
-     * @param Route $route matched route for documentation generation
+     * @param DocRoute $route matched route for documentation generation
      * @return string|null failure reason or null if filter passed
      */
-    public static function apply(Route $route): ?string;
+    public static function apply(DocRoute $route): ?string;
 }
 
 abstract class PreflightDegree

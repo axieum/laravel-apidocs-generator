@@ -4,8 +4,7 @@ namespace Axieum\ApiDocs\preflight;
 
 use Axieum\ApiDocs\tags\HiddenTag;
 use Axieum\ApiDocs\util\DocBlockHelper;
-use Illuminate\Routing\Route;
-use phpDocumentor\Reflection\DocBlock;
+use Axieum\ApiDocs\util\DocRoute;
 
 /**
  * Route preflight check for hiding routes annotated as hidden from documentation.
@@ -23,12 +22,10 @@ class HiddenRoutePreflight implements RoutePreflight
     /**
      * @inheritDoc
      */
-    public static function apply(Route $route): ?string
+    public static function apply(DocRoute $route): ?string
     {
-        /** @var DocBlock|null $controllerDocBlock */
-        $controllerDocBlock = $route->controllerDocBlock;
-        /** @var DocBlock|null $actionDocBlock */
-        $actionDocBlock = $route->actionDocBlock;
+        $controllerDocBlock = $route->getDocBlock('controller');
+        $actionDocBlock = $route->getDocBlock('action');
 
         // Fetch all "hidden" tags on both controller and action
         $hiddenTags = DocBlockHelper::getTagsByClass($controllerDocBlock, HiddenTag::class)
