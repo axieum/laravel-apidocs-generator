@@ -16,5 +16,9 @@ return [
     'routes'     => 'Discovered :count routes.',
     'preflight'  => 'Skipping route: [:methods] :uri - :reason',
     'preprocess' => 'About to process :routes routes across :groups groups...',
+    'process'    => [
+        'success' => 'Processed group: :name - :path (:size)',
+        'error'   => 'Unable to process group: :name - :error'
+    ],
     'finish'     => 'Successfully generated API documentation for :routes routes!'
 ];

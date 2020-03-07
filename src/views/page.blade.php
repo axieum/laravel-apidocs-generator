@@ -1,7 +1,9 @@
 @include('apidocs::frontmatter')
 
-<ul>
-    @foreach($actionDocBlock->getTags() as $tag)
-        <li>{{ (string) $tag  }}</li>
-    @endforeach
-</ul>
+# {{ $groupName }}
+
+@foreach($routes as $route)
+@php /** @var \Axieum\ApiDocs\util\DocRoute $route */ @endphp
+## `/{{ $route->getMeta('title', $route->uri()) }}`
+
+@endforeach

@@ -13,11 +13,16 @@ class DocRoute
     protected $route;
 
     /** @var Collection<DocBlock> $docblocks all extracted docblock(s) */
-    protected $docblocks;
+    public $docblocks;
 
     /** @var array<mixed> $meta documentation metadata */
     public $meta = [];
 
+    /**
+     * Constructs a new Documented Route.
+     *
+     * @param Route $route underlying route
+     */
     public function __construct(Route $route)
     {
         $this->route = $route;
@@ -35,13 +40,14 @@ class DocRoute
     }
 
     /**
-     * Returns all inspected docblock(s).
+     * Returns a named docblock or null if not specified.
      *
-     * @return Collection
+     * @param string $key docblock name
+     * @return DocBlock|null named docblock or null if not set
      */
-    public function getDocBlocks(): Collection
+    public function getDocBlock(string $key): ?DocBlock
     {
-        return $this->docblocks;
+        return $this->docblocks->get($key);
     }
 
     /**
@@ -58,17 +64,6 @@ class DocRoute
     }
 
     /**
-     * Returns a named docblock or null if not specified.
-     *
-     * @param string $key docblock name
-     * @return DocBlock|null named docblock or null if not set
-     */
-    public function getDocBlock(string $key): ?DocBlock
-    {
-        return $this->docblocks->get($key);
-    }
-
-    /**
      * Determines whether the route has a named docblock.
      *
      * @param string $key docblock name
@@ -77,6 +72,19 @@ class DocRoute
     public function hasDocBlock(string $key): bool
     {
         return !is_null($this->docblocks->get($key));
+    }
+
+    /**
+     * Returns the metadata value associated with a given name, or null if not
+     * set.
+     *
+     * @param string     $key     metadata name
+     * @param mixed|null $default fallback metadata value if non-existent
+     * @return mixed|null metadata value or default if specified
+     */
+    public function getMeta(string $key, $default = null)
+    {
+        return $this->meta[$key] ?? $default;
     }
 
     /**
@@ -103,11 +111,21 @@ class DocRoute
         return isset($this->meta[$key]);
     }
 
+    /**
+     * Returns the underlying route's uri.
+     *
+     * @return string route uri
+     */
     public function uri(): string
     {
         return $this->route->uri();
     }
 
+    /**
+     * Returns the underlying route's methods, except HEAD.
+     *
+     * @return array<string> methods
+     */
     public function methods(): array
     {
         return array_diff($this->route->methods(), [Request::METHOD_HEAD]);

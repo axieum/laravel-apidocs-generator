@@ -9,6 +9,8 @@ use Axieum\ApiDocs\util\DocRoute;
 use Axieum\ApiDocs\util\RouteHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlockFactory;
 use Webmozart\Assert\Assert;
@@ -71,7 +73,7 @@ class GenerateCommand extends Command
         ]));
 
         // TODO: Process route groups
-        //
+        $this->processRouteGroups($routeGroups);
 
         // Generation finished
         $this->info(__('apidocs::console.finish', [
@@ -159,5 +161,64 @@ class GenerateCommand extends Command
             foreach ($mutators as $mutator)
                 call_user_func([$mutator, 'mutate'], $route);
         });
+    }
+
+    /**
+     * Processes route groups for documentation generation.
+     *
+     * @param Collection $routeGroups
+     */
+    private function processRouteGroups(Collection $routeGroups): void
+    {
+        /** @var string $output documentation output filename format */
+        $output = config('apidocs.output', 'docs/:name.md');
+
+        // Process route groups
+        $progress = $this->output->createProgressBar($routeGroups->count());
+        foreach ($routeGroups as $groupName => $routes) {
+            /** @var Collection<DocRoute> $routes */
+            try {
+                view('apidocs::page')->with([
+                    'groupName' => $groupName,
+                    'routes'    => $routes
+                ])->render(function ($view, $content) use ($groupName, $output) {
+                    $path = str_replace([':version', ':name'], ['1.0', Str::slug($groupName)], $output);
+
+                    File::ensureDirectoryExists(File::dirname($path));
+                    $size = File::put($path, $content);
+
+                    $this->line(__('apidocs::console.process.success', [
+                        'name' => $groupName,
+                        'path' => $path,
+                        'size' => self::bytesToHuman($size)
+                    ]));
+                });
+            } catch (\Throwable $e) {
+                $this->error(__('apidocs::console.process.error', [
+                    'name'  => $groupName,
+                    'error' => $e->getMessage()
+                ]));
+            }
+
+            $progress->advance();
+        }
+
+        $progress->finish();
+        $this->line('');
+    }
+
+    /**
+     * Computes and formats given bytes to human readable format.
+     *
+     * @param int $bytes     number of bytes
+     * @param int $precision number of decimal points
+     * @return string human readable file size
+     */
+    public static function bytesToHuman(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+        for ($i = 0; $bytes > 1024; $i++)
+            $bytes /= 1024;
+        return round($bytes, $precision) . ' ' . $units[$i];
     }
 }

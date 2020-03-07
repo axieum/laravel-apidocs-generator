@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'output'    => 'docs/:version/:name.md',
+    'groupBy'   => 'meta.groups',
+    'routes'    => [
+        'matches' => [
+            '*'
+        ],
+        'hides'   => []
+    ],
     'tags'      => [
         'query'          => \Axieum\ApiDocs\tags\QueryTag::class,
         'url'            => \Axieum\ApiDocs\tags\UrlTag::class,
@@ -16,12 +24,5 @@ return [
     ],
     'mutators'  => [
         \Axieum\ApiDocs\mutators\GroupMutator::class
-    ],
-    'groupBy'   => 'meta.groups',
-    'routes'    => [
-        'matches' => [
-            '*'
-        ],
-        'hides'   => []
     ]
 ];
