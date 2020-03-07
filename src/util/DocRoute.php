@@ -122,7 +122,7 @@ class DocRoute
     }
 
     /**
-     * Returns the underlying route's methods, except HEAD.
+     * Returns the underlying route's methods, except {@see Request::METHOD_HEAD}.
      *
      * @return array<string> methods
      */

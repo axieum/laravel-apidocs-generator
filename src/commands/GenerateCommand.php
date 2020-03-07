@@ -22,8 +22,7 @@ class GenerateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'apidocs:generate
-                            {--d|dir= : Override output directory}';
+    protected $signature = 'apidocs:generate';
 
     /**
      * The commands command description.
@@ -64,22 +63,24 @@ class GenerateCommand extends Command
         // Mutate routes
         $this->mutateRoutes($routes);
 
-        // Group routes
-        $routeGroups = $routes->groupBy(config('apidocs.groupBy', 'meta.groups'));
+        // Group routes and sort alphabetically
+        $routeGroups = $routes->groupBy(config('apidocs.groupBy', 'meta.groups.*.title'));
+        $routeGroups = $routeGroups->sortKeys();
 
         $this->info(__('apidocs::console.preprocess', [
             'groups' => $routeGroups->count(),
             'routes' => $routes->count()
         ]));
 
-        // TODO: Process route groups
-        $this->processRouteGroups($routeGroups);
+        // Process route groups
+        $digest = $this->processRouteGroups($routeGroups);
 
         // Generation finished
         $this->info(__('apidocs::console.finish', [
             'groups' => $routeGroups->count(),
             'routes' => $routes->count()
         ]));
+        $this->table(__('apidocs::console.process.table'), $digest);
         return null;
     }
 
@@ -92,10 +93,7 @@ class GenerateCommand extends Command
     private function getRoutes(): Collection
     {
         ['matches' => $matches, 'hides' => $hides] = config('apidocs.routes');
-        return RouteHelper::getRoutes($matches, $hides)
-                          ->map(function ($route) {
-                              return new DocRoute($route);
-                          });
+        return RouteHelper::getRoutes($matches, $hides)->mapInto(DocRoute::class);
     }
 
     /**
@@ -157,7 +155,6 @@ class GenerateCommand extends Command
         Assert::allIsAOf($mutators, RouteMutator::class);
 
         $routes->each(function ($route) use ($mutators) {
-            $route->meta = [];
             foreach ($mutators as $mutator)
                 call_user_func([$mutator, 'mutate'], $route);
         });
@@ -167,35 +164,62 @@ class GenerateCommand extends Command
      * Processes route groups for documentation generation.
      *
      * @param Collection $routeGroups
+     * @return array processed routes information (e.g. file path, size, etc.)
      */
-    private function processRouteGroups(Collection $routeGroups): void
+    private function processRouteGroups(Collection $routeGroups): array
     {
         /** @var string $output documentation output filename format */
         $output = config('apidocs.output', 'docs/:name.md');
 
-        // Process route groups
+        // Prepare progress bar
         $progress = $this->output->createProgressBar($routeGroups->count());
+        $progress->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed:6s% • %message%');
+        $progress->setMessage('...');
+
+        // Prepare output table
+        $table = [];
+
+        // Process route groups
         foreach ($routeGroups as $groupName => $routes) {
             /** @var Collection<DocRoute> $routes */
+
+            // Compute route group properties
+            // TODO: Replace the version in the output path
+            $path = str_replace([':version', ':name'], ['1.0', Str::slug($groupName)], $output);
+            $count = $routes->count();
+
+            // Update progress bar
+            $progress->setMessage(__('apidocs::console.process.bar', [
+                'name'  => $groupName,
+                'count' => $count,
+                'path'  => $path
+            ]));
+
+            // Render and persist to disk
             try {
                 view('apidocs::page')->with([
                     'groupName' => $groupName,
-                    'routes'    => $routes
-                ])->render(function ($view, $content) use ($groupName, $output) {
-                    $path = str_replace([':version', ':name'], ['1.0', Str::slug($groupName)], $output);
-
+                    'routes'    => $routes,
+                    'path'      => $path
+                ])->render(function ($view, $content) use ($groupName, $count, $path, &$table) {
+                    // Persist rendered content to disk
                     File::ensureDirectoryExists(File::dirname($path));
                     $size = File::put($path, $content);
 
-                    $this->line(__('apidocs::console.process.success', [
-                        'name' => $groupName,
-                        'path' => $path,
-                        'size' => self::bytesToHuman($size)
-                    ]));
+                    // Add route group to console table
+                    $table[] = [
+                        'group'  => $groupName,
+                        'routes' => $count,
+                        'path'   => $path,
+                        'size'   => self::bytesToHuman($size)
+                    ];
                 });
             } catch (\Throwable $e) {
+                $progress->clear();
                 $this->error(__('apidocs::console.process.error', [
                     'name'  => $groupName,
+                    'count' => $count,
+                    'path'  => $path,
                     'error' => $e->getMessage()
                 ]));
             }
@@ -203,8 +227,10 @@ class GenerateCommand extends Command
             $progress->advance();
         }
 
+        // Finish processing
         $progress->finish();
-        $this->line('');
+        $this->info(''); // NB: New line after progress bar
+        return $table;
     }
 
     /**

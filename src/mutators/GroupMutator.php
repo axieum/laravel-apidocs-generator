@@ -22,12 +22,24 @@ class GroupMutator implements RouteMutator
         // Extract specified route groups from both controller and action docblock(s)
         $groups = DocBlockHelper::getTagsByClass($controllerDocBlock, GroupTag::class)
                                 ->concat(DocBlockHelper::getTagsByClass($actionDocBlock, GroupTag::class))
-                                ->map(function ($tag) {
-                                    return (string)$tag;
+                                ->mapToDictionary(function ($tag) {
+                                    // Group descriptions by title (e.g. `[title => [descriptions...]]`)
+                                    /** @var GroupTag $tag */
+                                    return [$tag->getTitle() => (string)$tag->getDescription()];
                                 })
-                                ->unique()
+                                ->map(function ($descriptions, $title) {
+                                    // Merge groups and hence descriptions
+                                    return [
+                                        'title'       => $title,
+                                        'description' => trim(join(PHP_EOL, $descriptions))
+                                    ];
+                                })
+                                ->values()
                                 ->toArray();
 
-        $route->setMeta('groups', $groups ?: [__('apidocs::docs.groups.default')]);
+        $route->setMeta('groups', $groups ?: [
+            'title'       => __('apidocs::docs.groups.default.title'),
+            'description' => __('apidocs::docs.groups.default.description')
+        ]);
     }
 }

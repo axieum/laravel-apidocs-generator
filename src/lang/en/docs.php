@@ -13,6 +13,9 @@ return [
     */
 
     'groups' => [
-        'default' => 'General'
+        'default' => [
+            'title'       => 'General',
+            'description' => ''
+        ]
     ]
 ];
