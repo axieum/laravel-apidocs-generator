@@ -41,7 +41,7 @@ class RouteHelper
     /**
      * Returns the DocBlock associated with the given route's controller.
      *
-     * @param \Illuminate\Routing\Route $route
+     * @param \Illuminate\Routing\Route $route   route with controller
      * @param DocBlockFactory|null      $factory overrides the default factory
      * @return DocBlock|null DocBlock instance for route's controller or null if not exists
      */
@@ -58,6 +58,13 @@ class RouteHelper
         }
     }
 
+    /**
+     * Returns the DocBlock associated with the given route's action.
+     *
+     * @param \Illuminate\Routing\Route $route   route with action
+     * @param DocBlockFactory|null      $factory overrides the default factory
+     * @return DocBlock|null DocBlock instance for route's action or null if not exists
+     */
     public static function getActionDocBlock(\Illuminate\Routing\Route $route,
                                              ?DocBlockFactory $factory = null): ?DocBlock
     {

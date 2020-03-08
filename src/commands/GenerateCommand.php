@@ -106,7 +106,7 @@ class GenerateCommand extends Command
     private function preflightRoutes(Collection $routes): Collection
     {
         $checks = config('apidocs.preflight', []);
-        Assert::allIsAOf($checks, RoutePreflight::class);
+        Assert::allIsAOf($checks, RoutePreflight::class, 'Expected route preflight to be an instance of %2$s. Got: %s');
 
         return $routes->filter(function ($route) use ($checks) {
             /** @var DocRoute $route */
@@ -134,7 +134,7 @@ class GenerateCommand extends Command
     private function injectDocBlocks(Collection $routes): void
     {
         $tags = config('apidocs.tags', []);
-        Assert::allIsAOf(array_values($tags), Tag::class);
+        Assert::allIsAOf(array_values($tags), Tag::class, 'Expected DocBlock tag to be an instance of %2$s. Got: %s');
         $factory = DocBlockFactory::createInstance($tags);
 
         $routes->each(function ($route) use ($factory) {
@@ -152,7 +152,7 @@ class GenerateCommand extends Command
     private function mutateRoutes(Collection $routes): void
     {
         $mutators = config('apidocs.mutators', []);
-        Assert::allIsAOf($mutators, RouteMutator::class);
+        Assert::allIsAOf($mutators, RouteMutator::class, 'Expected route mutator to be an instance of %2$s. Got: %s');
 
         $routes->each(function ($route) use ($mutators) {
             foreach ($mutators as $mutator)

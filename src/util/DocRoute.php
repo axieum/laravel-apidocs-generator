@@ -13,10 +13,10 @@ class DocRoute
     protected $route;
 
     /** @var Collection<DocBlock> $docblocks all extracted docblock(s) */
-    public $docblocks;
+    protected $docblocks;
 
-    /** @var array<mixed> $meta documentation metadata */
-    public $meta = [];
+    /** @var Collection<mixed> $meta documentation metadata */
+    public $meta;
 
     /**
      * Constructs a new Documented Route.
@@ -27,6 +27,7 @@ class DocRoute
     {
         $this->route = $route;
         $this->docblocks = new Collection();
+        $this->meta = new Collection();
     }
 
     /**
@@ -75,6 +76,36 @@ class DocRoute
     }
 
     /**
+     * Filters and returns all tags by tag name.
+     *
+     * @param string $name tag name
+     * @return Collection<DocBlock\Tag> tags matching the tag name
+     */
+    public function getTagsByName(string $name): Collection
+    {
+        return $this->docblocks->flatMap(function ($docblock) use ($name) {
+            /** @var DocBlock $docblock */
+            return $docblock->getTagsByName($name);
+        });
+    }
+
+    /**
+     * Filters and returns all tags by tag class or object.
+     *
+     * @param mixed $class tag class or object instance
+     * @return Collection<DocBlock\Tag> tags matching the tag class
+     */
+    public function getTagsByClass($class): Collection
+    {
+        return $this->docblocks->flatMap(function ($docblock) {
+            /** @var DocBlock $docblock */
+            return $docblock->getTags();
+        })->filter(function ($tag) use ($class) {
+            return $tag instanceof $class;
+        });
+    }
+
+    /**
      * Returns the metadata value associated with a given name, or null if not
      * set.
      *
@@ -84,7 +115,7 @@ class DocRoute
      */
     public function getMeta(string $key, $default = null)
     {
-        return $this->meta[$key] ?? $default;
+        return $this->meta->get($key, $default);
     }
 
     /**
@@ -96,7 +127,7 @@ class DocRoute
      */
     public function setMeta(string $key, $value = null): self
     {
-        $this->meta[$key] = $value;
+        $this->meta->put($key, $value);
         return $this;
     }
 
@@ -108,7 +139,7 @@ class DocRoute
      */
     public function hasMeta(string $key): bool
     {
-        return isset($this->meta[$key]);
+        return $this->meta->has($key);
     }
 
     /**
