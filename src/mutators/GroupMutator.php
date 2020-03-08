@@ -3,6 +3,7 @@
 namespace Axieum\ApiDocs\mutators;
 
 use Axieum\ApiDocs\tags\GroupTag;
+use Axieum\ApiDocs\util\DocGroup;
 use Axieum\ApiDocs\util\DocRoute;
 
 /**
@@ -24,17 +25,17 @@ class GroupMutator implements RouteMutator
                         })
                         ->map(function ($descriptions, $title) {
                             // Merge groups and hence descriptions
-                            return [
-                                'title'       => $title,
-                                'description' => trim(join(PHP_EOL, $descriptions))
-                            ];
+                            return ['title' => $title, 'description' => trim(join(PHP_EOL, $descriptions))];
                         })
                         ->values()
-                        ->toArray();
+                        ->whenEmpty(function () {
+                            // Supply default group if no groups specified
+                            return collect([
+                                'title'       => __('apidocs::docs.groups.default.title'),
+                                'description' => __('apidocs::docs.groups.default.description')
+                            ]);
+                        });
 
-        $route->setMeta('groups', $groups ?: [
-            'title'       => __('apidocs::docs.groups.default.title'),
-            'description' => __('apidocs::docs.groups.default.description')
-        ]);
+        $route->setMeta('groups', $groups);
     }
 }

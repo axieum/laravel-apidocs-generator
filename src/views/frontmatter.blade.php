@@ -1,5 +1,5 @@
 ---
-title: '{{ $groupName }}'
-description: 'This is the description'
+title: '{{ $group['title'] }}'
+description: '{{ $group['description'] ?? '' }}'
 order: 0
 ---

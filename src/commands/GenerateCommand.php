@@ -180,17 +180,17 @@ class GenerateCommand extends Command
         $table = [];
 
         // Process route groups
-        foreach ($routeGroups as $groupName => $routes) {
+        foreach ($routeGroups as $key => $routes) {
             /** @var Collection<DocRoute> $routes */
 
             // Compute route group properties
             // TODO: Replace the version in the output path
-            $path = str_replace([':version', ':name'], ['1.0', Str::slug($groupName)], $output);
+            $path = str_replace([':version', ':name'], ['1.0', Str::slug($key)], $output);
             $count = $routes->count();
 
             // Update progress bar
             $progress->setMessage(__('apidocs::console.process.bar', [
-                'name'  => $groupName,
+                'name'  => $key,
                 'count' => $count,
                 'path'  => $path
             ]));
@@ -198,17 +198,17 @@ class GenerateCommand extends Command
             // Render and persist to disk
             try {
                 view('apidocs::page')->with([
-                    'groupName' => $groupName,
-                    'routes'    => $routes,
-                    'path'      => $path
-                ])->render(function ($view, $content) use ($groupName, $count, $path, &$table) {
+                    'key'    => $key,
+                    'routes' => $routes,
+                    'path'   => $path
+                ])->render(function ($view, $content) use ($key, $count, $path, &$table) {
                     // Persist rendered content to disk
                     File::ensureDirectoryExists(File::dirname($path));
                     $size = File::put($path, $content);
 
                     // Add route group to console table
                     $table[] = [
-                        'group'  => $groupName,
+                        'group'  => $key,
                         'routes' => $count,
                         'path'   => $path,
                         'size'   => self::bytesToHuman($size)
@@ -217,7 +217,7 @@ class GenerateCommand extends Command
             } catch (\Throwable $e) {
                 $progress->clear();
                 $this->error(__('apidocs::console.process.error', [
-                    'name'  => $groupName,
+                    'name'  => $key,
                     'count' => $count,
                     'path'  => $path,
                     'error' => $e->getMessage()

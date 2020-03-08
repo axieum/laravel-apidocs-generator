@@ -76,6 +76,19 @@ class DocRoute
     }
 
     /**
+     * Returns all tags.
+     *
+     * @return Collection<DocBlock\Tag> all tags
+     */
+    public function getTags(): Collection
+    {
+        return $this->docblocks->flatMap(function ($docblock) {
+            /** @var DocBlock $docblock */
+            return $docblock->getTags();
+        });
+    }
+
+    /**
      * Filters and returns all tags by tag name.
      *
      * @param string $name tag name
@@ -106,16 +119,16 @@ class DocRoute
     }
 
     /**
-     * Returns the metadata value associated with a given name, or null if not
-     * set.
+     * Returns all documented route metadata, or the value associated with a
+     * given name, or null if not set.
      *
-     * @param string     $key     metadata name
-     * @param mixed|null $default fallback metadata value if non-existent
-     * @return mixed|null metadata value or default if specified
+     * @param string|null $key     metadata name
+     * @param mixed|null  $default fallback metadata value if non-existent
+     * @return mixed|null metadata [value] or default if specified
      */
-    public function getMeta(string $key, $default = null)
+    public function getMeta(?string $key = null, $default = null)
     {
-        return $this->meta->get($key, $default);
+        return isset($key) ? $this->meta->get($key, $default) : $this->meta;
     }
 
     /**
