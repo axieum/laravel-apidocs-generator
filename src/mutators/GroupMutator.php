@@ -3,7 +3,6 @@
 namespace Axieum\ApiDocs\mutators;
 
 use Axieum\ApiDocs\tags\GroupTag;
-use Axieum\ApiDocs\util\DocGroup;
 use Axieum\ApiDocs\util\DocRoute;
 
 /**

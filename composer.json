@@ -22,7 +22,10 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "phpdocumentor/reflection-docblock": "^5.0@dev"
+        "phpdocumentor/reflection-docblock": "^5.0@dev",
+        "ext-json": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "require-dev": {}
 }

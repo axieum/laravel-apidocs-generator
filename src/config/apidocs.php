@@ -60,7 +60,7 @@ return [
         'query'          => \Axieum\ApiDocs\tags\QueryTag::class,
         'url'            => \Axieum\ApiDocs\tags\UrlTag::class,
         'body'           => \phpDocumentor\Reflection\DocBlock\Tags\Generic::class,
-        'response'       => \phpDocumentor\Reflection\DocBlock\Tags\Generic::class,
+        'response'       => \Axieum\ApiDocs\tags\ResponseTag::class,
         'group'          => \Axieum\ApiDocs\tags\GroupTag::class,
         'authentication' => \phpDocumentor\Reflection\DocBlock\Tags\Generic::class,
         'hidden'         => \Axieum\ApiDocs\tags\HiddenTag::class,
@@ -95,7 +95,9 @@ return [
     */
 
     'mutators' => [
-        \Axieum\ApiDocs\mutators\GroupMutator::class
+        \Axieum\ApiDocs\mutators\GroupMutator::class,
+        \Axieum\ApiDocs\mutators\AuthMutator::class,
+        \Axieum\ApiDocs\mutators\ResponseMutator::class,
     ]
 
 ];

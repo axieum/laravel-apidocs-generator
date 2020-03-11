@@ -63,10 +63,10 @@ abstract class TagWithParam extends TagWithType implements StaticMethod
         $parts = preg_split('/(\s+)/Su', $body, 3, PREG_SPLIT_DELIM_CAPTURE);
         Assert::isArray($parts); // e.g. ['name', ' ', 'optional', 'description...']
 
-        // param Value Type
+        // Parameter Value Type
         $type = $typeStr ? $typeResolver->resolve($typeStr, $context) : null;
 
-        // param Name
+        // Parameter Name
         $paramName = array_shift($parts);
         array_shift($parts);
 

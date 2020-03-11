@@ -12,6 +12,8 @@ return [
     |
     */
 
+    'authentication' => 'Requires authentication!',
+
     'groups' => [
         'default' => [
             'title'       => 'General',
