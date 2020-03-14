@@ -85,6 +85,16 @@ abstract class TagWithParam extends TagWithType implements StaticMethod
     }
 
     /**
+     * Returns the parameter name.
+     *
+     * @return string|null parameter name
+     */
+    public function getParamName(): ?string
+    {
+        return $this->paramName;
+    }
+
+    /**
      * Determines whether the given parameter is required.
      *
      * @return bool true if the parameter is required

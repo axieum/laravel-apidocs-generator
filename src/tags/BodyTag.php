@@ -5,7 +5,7 @@ namespace Axieum\ApiDocs\tags;
 use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\Type;
 
-final class UrlTag extends TagWithParam
+final class BodyTag extends TagWithParam
 {
     /**
      * @inheritDoc
@@ -14,7 +14,7 @@ final class UrlTag extends TagWithParam
                                 ?Type $type = null,
                                 bool $required = false,
                                 ?Description $description = null,
-                                string $name = 'url')
+                                string $name = 'body')
     {
         parent::__construct($paramName, $type, $required, $description, $name);
     }

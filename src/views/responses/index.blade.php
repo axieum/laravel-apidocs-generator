@@ -3,8 +3,7 @@
     $responseTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\ResponseTag::class);
 @endphp
 
-{{-- TODO: Localisation --}}
-### Responses
+### @lang('apidocs::docs.responses.title')
 
 @foreach($responseTags as $responseTag)
 @php
@@ -22,7 +21,9 @@
 ```
 @else
 ```
-{{ \Illuminate\Http\Response::$statusTexts[$status] ?? $status }}
+@choice('apidocs::docs.responses.status', isset(\Illuminate\Http\Response::$statusTexts[$status]), ['status' => $status, 'text' => \Illuminate\Http\Response::$statusTexts[$status] ?? 'Unknown'])
+
 ```
+
 @endif
 @endforeach

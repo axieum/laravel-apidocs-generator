@@ -2,15 +2,20 @@
 
 namespace Axieum\ApiDocs\tags;
 
+use phpDocumentor\Reflection\DocBlock\Description;
+use phpDocumentor\Reflection\Type;
+
 final class QueryTag extends TagWithParam
 {
     /**
-     * Returns the query name.
-     *
-     * @return string query name
+     * @inheritDoc
      */
-    public function getQueryName(): string
+    public function __construct(string $paramName,
+                                ?Type $type = null,
+                                bool $required = false,
+                                ?Description $description = null,
+                                string $name = 'query')
     {
-        return $this->paramName;
+        parent::__construct($paramName, $type, $required, $description, $name);
     }
 }

@@ -197,7 +197,7 @@ class GenerateCommand extends Command
 
             // Render and persist to disk
             try {
-                view('apidocs::page')->with([
+                view('apidocs::index')->with([
                     'key'    => $key,
                     'routes' => $routes,
                     'path'   => $path

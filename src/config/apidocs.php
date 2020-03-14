@@ -59,10 +59,9 @@ return [
     'tags' => [
         'query'          => \Axieum\ApiDocs\tags\QueryTag::class,
         'url'            => \Axieum\ApiDocs\tags\UrlTag::class,
-        'body'           => \phpDocumentor\Reflection\DocBlock\Tags\Generic::class,
+        'body'           => \Axieum\ApiDocs\tags\BodyTag::class,
         'response'       => \Axieum\ApiDocs\tags\ResponseTag::class,
         'group'          => \Axieum\ApiDocs\tags\GroupTag::class,
-        'authentication' => \phpDocumentor\Reflection\DocBlock\Tags\Generic::class,
         'hidden'         => \Axieum\ApiDocs\tags\HiddenTag::class,
     ],
 
