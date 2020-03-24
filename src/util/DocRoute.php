@@ -12,6 +12,9 @@ class DocRoute
     /** @var Route $route */
     protected $route;
 
+    /** @var mixed $version configuration version */
+    protected $version;
+
     /** @var Collection<DocBlock> $docblocks all extracted docblock(s) */
     protected $docblocks;
 
@@ -21,11 +24,13 @@ class DocRoute
     /**
      * Constructs a new Documented Route.
      *
-     * @param Route $route underlying route
+     * @param Route $route   underlying route
+     * @param mixed $version configuration version
      */
-    public function __construct(Route $route)
+    public function __construct(Route $route, $version = null)
     {
         $this->route = $route;
+        $this->version = $version;
         $this->docblocks = new Collection();
         $this->meta = new Collection();
     }
@@ -33,11 +38,21 @@ class DocRoute
     /**
      * Returns the underlying route.
      *
-     * @return Route
+     * @return Route matched route
      */
     public function getRoute(): Route
     {
         return $this->route;
+    }
+
+    /**
+     * Returns the configuration version used to match the route.
+     *
+     * @return mixed configuration version
+     */
+    public function getVersion()
+    {
+        return $this->version;
     }
 
     /**

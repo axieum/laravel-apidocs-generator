@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Documentation Output
@@ -29,24 +28,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Route Matching
-    |--------------------------------------------------------------------------
-    |
-    | This option controls which routes should be used for the documentation
-    | generation based on their URI. Use 'matches' for routes to whitelist,
-    | and 'hides' to blacklist (NB: hiding takes priority over matching).
-    |
-    */
-
-    'routes' => [
-        'matches' => [
-            '*'
-        ],
-        'hides'   => []
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | DocBlock Tags
     |--------------------------------------------------------------------------
     |
@@ -57,12 +38,12 @@ return [
     */
 
     'tags' => [
-        'query'          => \Axieum\ApiDocs\tags\QueryTag::class,
-        'url'            => \Axieum\ApiDocs\tags\UrlTag::class,
-        'body'           => \Axieum\ApiDocs\tags\BodyTag::class,
-        'response'       => \Axieum\ApiDocs\tags\ResponseTag::class,
-        'group'          => \Axieum\ApiDocs\tags\GroupTag::class,
-        'hidden'         => \Axieum\ApiDocs\tags\HiddenTag::class,
+        'query'    => \Axieum\ApiDocs\tags\QueryTag::class,
+        'url'      => \Axieum\ApiDocs\tags\UrlTag::class,
+        'body'     => \Axieum\ApiDocs\tags\BodyTag::class,
+        'response' => \Axieum\ApiDocs\tags\ResponseTag::class,
+        'group'    => \Axieum\ApiDocs\tags\GroupTag::class,
+        'hidden'   => \Axieum\ApiDocs\tags\HiddenTag::class,
     ],
 
     /*
@@ -97,6 +78,41 @@ return [
         \Axieum\ApiDocs\mutators\GroupMutator::class,
         \Axieum\ApiDocs\mutators\AuthMutator::class,
         \Axieum\ApiDocs\mutators\ResponseMutator::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Documentation Versions
+    |--------------------------------------------------------------------------
+    |
+    | This option allows registering documented route versions.
+    | NB: These can be leveraged to have different sets of routes associated
+    | with a specific version (key).
+    |
+    */
+
+    'versions' => [
+
+        'v1' => [
+            /*
+            |--------------------------------------------------------------------------
+            | Route Matching
+            |--------------------------------------------------------------------------
+            |
+            | This option controls which routes should be used for the documentation
+            | generation based on their URI. Use 'matches' for routes to whitelist,
+            | and 'hides' to blacklist (NB: hiding takes priority over matching).
+            |
+            */
+
+            'routes' => [
+                'matches' => [
+                    '*'
+                ],
+                'hides'   => []
+            ],
+        ],
+
     ]
 
 ];

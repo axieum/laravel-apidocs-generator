@@ -13,13 +13,14 @@ return [
     */
 
     'begin'      => 'Generating API documentation...',
-    'routes'     => 'Discovered :count routes',
+    'routes'     => 'Discovered :count valid routes (:version)',
     'preflight'  => 'Skipping route: [:methods] :uri - :reason',
-    'preprocess' => 'Processing :routes routes across :groups groups...',
+    'preprocess' => 'Processing :routes routes across :groups groups... (:version)',
     'process'    => [
-        'bar'   => ':name (:count routes) - :path',
-        'error' => 'Unable to process group: :name (:count routes) - :path - :error',
-        'table' => ['Group', 'Routes', 'Path', 'Size']
+        'bar'   => ':version - :name (:count routes) - :path',
+        'error' => 'Unable to process group: :name (:count routes) (:version) - :path - :error',
     ],
-    'finish'     => 'Finished generating API documentation for :routes routes!'
+    'processed'  => 'Processed :routes routes (:version)',
+    'table'      => ['Group', 'Routes', 'Path', 'Size'],
+    'finish'     => 'Finished generating API documentation for :groups groups!'
 ];

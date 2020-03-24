@@ -17,22 +17,15 @@ use Webmozart\Assert\Assert;
 
 class GenerateCommand extends Command
 {
-    /**
-     * The name and signature of the commands command.
-     *
-     * @var string
-     */
-    protected $signature = 'apidocs:generate';
+    /** @var string The name and signature of the command */
+    protected $signature = 'apidocs:generate
+                                {versions?* : Configured version(s) to generate}';
 
-    /**
-     * The commands command description.
-     *
-     * @var string
-     */
+    /** @var string the command description */
     protected $description = 'Generates API documentation';
 
     /**
-     * Create a new command instance.
+     * Creates a new command instance.
      *
      * @return void
      */
@@ -42,7 +35,7 @@ class GenerateCommand extends Command
     }
 
     /**
-     * Execute the commands command.
+     * Handles the command.
      *
      * @return mixed
      */
@@ -50,60 +43,97 @@ class GenerateCommand extends Command
     {
         $this->info(__('apidocs::console.begin'));
 
-        // Fetch routes
-        $routes = $this->getRoutes();
-        $this->info(__('apidocs::console.routes', ['count' => $routes->count()]));
+        // Determine versions to generate documentation for
+        $versions = $this->getVersions();
 
-        // Inject route docblock(s)
-        $this->injectDocBlocks($routes);
+        // Fetch all versioned routes
+        $versions = $versions->mapWithKeys(function ($version) {
+            // Fetch routes
+            $routes = $this->getRoutes($version);
+            // Inject route docblock(s)
+            $this->injectDocBlocks($routes, $version);
+            // Perform route preflight checks
+            $routes = $this->preflightRoutes($routes, $version);
 
-        // Perform route preflight checks
-        $routes = $this->preflightRoutes($routes);
+            $this->info(__('apidocs::console.routes', ['count' => $routes->count(), 'version' => $version]));
+            return [$version => $routes];
+        });
 
         // Mutate routes
-        $this->mutateRoutes($routes);
+        $versions->each(function ($routes, $version) {
+            $this->mutateRoutes($routes, $version);
+        });
 
-        // Group routes and sort alphabetically
-        $routeGroups = $routes->groupBy(config('apidocs.groupBy', 'meta.groups.*.title'));
-        $routeGroups = $routeGroups->sortKeys();
+        // Process routes
+        $digest = [];
+        $versions->each(function ($routes, $version) use (&$digest) {
+            /** @var Collection<DocRoute> $routes */
 
-        $this->info(__('apidocs::console.preprocess', [
-            'groups' => $routeGroups->count(),
-            'routes' => $routes->count()
-        ]));
+            // Group routes and sort alphabetically
+            $groups = $routes->groupBy(config("apidocs.groupBy", 'meta.groups.*.title'))->sortKeys();
 
-        // Process route groups
-        $digest = $this->processRouteGroups($routeGroups);
+            $this->info(__('apidocs::console.preprocess',
+                ['groups' => $groups->count(), 'routes' => $routes->count(), 'version' => $version]));
 
-        // Generation finished
-        $this->info(__('apidocs::console.finish', [
-            'groups' => $routeGroups->count(),
-            'routes' => $routes->count()
-        ]));
-        $this->table(__('apidocs::console.process.table'), $digest);
+            // Process route groups and capture output
+            $result = $this->processRouteGroups($groups, $version);
+            $digest = array_merge($digest, $result);
+
+            $this->info(__('apidocs::console.processed',
+                ['groups' => $groups->count(), 'routes' => $routes->count(), 'version' => $version]));
+        });
+
+        // Print digest table (if has results)
+        $this->info(__('apidocs::console.finish', ['groups' => sizeof($digest)]));
+        if (!empty($digest))
+            $this->table(__('apidocs::console.table'), $digest);
         return null;
+    }
+
+    /**
+     * Determines and returns the versions to be generated.
+     *
+     * @return Collection<str> versions to generate
+     */
+    private function getVersions(): Collection
+    {
+        $versions = collect(config('apidocs.versions'))->keys();
+        $supplied = collect($this->argument('versions'))->unique()->toArray();
+
+        // Default to all versions
+        if (empty($supplied)) return $versions;
+
+        // Filter versions to those supplied
+        return $versions->filter(function ($version) use ($supplied) {
+            return Str::is($supplied, $version);
+        });
     }
 
     /**
      * Fetches the routes for API documentation generation and wraps it
      * in a documented route ({@see DocRoute}).
      *
+     * @param mixed $version configuration version
      * @return Collection<DocRoute> filtered documented route instances
      */
-    private function getRoutes(): Collection
+    private function getRoutes($version): Collection
     {
-        ['matches' => $matches, 'hides' => $hides] = config('apidocs.routes');
-        return RouteHelper::getRoutes($matches, $hides)->mapInto(DocRoute::class);
+        ['matches' => $matches, 'hides' => $hides] = config("apidocs.versions.${version}.routes");
+        return RouteHelper::getRoutes($matches, $hides)
+                          ->map(function ($route) use ($version) {
+                              return new DocRoute($route, $version);
+                          });
     }
 
     /**
      * Performs route preflight checks to determine suitability for API
      * documentation generation, and hence filters valid routes.
      *
-     * @param Collection<DocRoute> $routes matched route instances
+     * @param Collection<DocRoute> $routes  matched route instances
+     * @param mixed                $version configuration version
      * @return Collection<DocRoute> route instances suitable for documentation
      */
-    private function preflightRoutes(Collection $routes): Collection
+    private function preflightRoutes(Collection $routes, $version): Collection
     {
         $checks = config('apidocs.preflight', []);
         Assert::allIsAOf($checks, RoutePreflight::class, 'Expected route preflight to be an instance of %2$s. Got: %s');
@@ -129,11 +159,12 @@ class GenerateCommand extends Command
     /**
      * Injects docblock(s) for the given routes (or null if not specified).
      *
-     * @param Collection<DocRoute> $routes matched route instances
+     * @param Collection<DocRoute> $routes  matched route instances
+     * @param mixed                $version configuration version
      */
-    private function injectDocBlocks(Collection $routes): void
+    private function injectDocBlocks(Collection $routes, $version): void
     {
-        $tags = config('apidocs.tags', []);
+        $tags = config("apidocs.tags", []);
         Assert::allIsAOf(array_values($tags), Tag::class, 'Expected DocBlock tag to be an instance of %2$s. Got: %s');
         $factory = DocBlockFactory::createInstance($tags);
 
@@ -147,11 +178,12 @@ class GenerateCommand extends Command
     /**
      * Mutates route instances prior to documentation generation.
      *
-     * @param Collection<DocRoute> $routes checked route instances
+     * @param Collection<DocRoute> $routes  checked route instances
+     * @param mixed                $version configuration version
      */
-    private function mutateRoutes(Collection $routes): void
+    private function mutateRoutes(Collection $routes, $version): void
     {
-        $mutators = config('apidocs.mutators', []);
+        $mutators = config("apidocs.mutators", []);
         Assert::allIsAOf($mutators, RouteMutator::class, 'Expected route mutator to be an instance of %2$s. Got: %s');
 
         $routes->each(function ($route) use ($mutators) {
@@ -163,13 +195,14 @@ class GenerateCommand extends Command
     /**
      * Processes route groups for documentation generation.
      *
-     * @param Collection $routeGroups
+     * @param Collection $routeGroups routes grouped under a key
+     * @param mixed      $version     configuration version
      * @return array processed routes information (e.g. file path, size, etc.)
      */
-    private function processRouteGroups(Collection $routeGroups): array
+    private function processRouteGroups(Collection $routeGroups, $version): array
     {
         /** @var string $output documentation output filename format */
-        $output = config('apidocs.output', 'docs/:name.md');
+        $output = config("apidocs.output", 'docs/:name.md');
 
         // Prepare progress bar
         $progress = $this->output->createProgressBar($routeGroups->count());
@@ -184,23 +217,24 @@ class GenerateCommand extends Command
             /** @var Collection<DocRoute> $routes */
 
             // Compute route group properties
-            // TODO: Replace the version in the output path
-            $path = str_replace([':version', ':name'], ['1.0', Str::slug($key)], $output);
+            $path = str_replace([':version', ':name'], [$version, Str::slug($key)], $output);
             $count = $routes->count();
 
             // Update progress bar
             $progress->setMessage(__('apidocs::console.process.bar', [
-                'name'  => $key,
-                'count' => $count,
-                'path'  => $path
+                'name'    => $key,
+                'version' => $version,
+                'count'   => $count,
+                'path'    => $path
             ]));
 
             // Render and persist to disk
             try {
                 view('apidocs::index')->with([
-                    'key'    => $key,
-                    'routes' => $routes,
-                    'path'   => $path
+                    'key'     => $key,
+                    'version' => $version,
+                    'routes'  => $routes,
+                    'path'    => $path
                 ])->render(function ($view, $content) use ($key, $count, $path, &$table) {
                     // Persist rendered content to disk
                     File::ensureDirectoryExists(File::dirname($path));
@@ -217,10 +251,11 @@ class GenerateCommand extends Command
             } catch (\Throwable $e) {
                 $progress->clear();
                 $this->error(__('apidocs::console.process.error', [
-                    'name'  => $key,
-                    'count' => $count,
-                    'path'  => $path,
-                    'error' => $e->getMessage()
+                    'name'    => $key,
+                    'version' => $version,
+                    'count'   => $count,
+                    'path'    => $path,
+                    'error'   => $e->getMessage()
                 ]));
             }
 
