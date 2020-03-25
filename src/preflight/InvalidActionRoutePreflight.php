@@ -32,7 +32,7 @@ class InvalidActionRoutePreflight implements RoutePreflight
             return __('apidocs::preflight.missing_action');
 
         // Reject route if no docblock(s) were injected
-        if (!$route->hasDocBlock('controller') && !$route->hasDocBlock('action'))
+        if (!$route->hasDocBlock('action'))
             return __('apidocs::preflight.non_documented');
 
         return null;

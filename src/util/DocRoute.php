@@ -97,10 +97,11 @@ class DocRoute
      */
     public function getTags(): Collection
     {
-        return $this->docblocks->flatMap(function ($docblock) {
-            /** @var DocBlock $docblock */
-            return $docblock->getTags();
-        });
+        return $this->docblocks->whereNotNull()
+                               ->flatMap(function ($docblock) {
+                                   /** @var DocBlock $docblock */
+                                   return $docblock->getTags();
+                               });
     }
 
     /**
@@ -111,10 +112,11 @@ class DocRoute
      */
     public function getTagsByName(string $name): Collection
     {
-        return $this->docblocks->flatMap(function ($docblock) use ($name) {
-            /** @var DocBlock $docblock */
-            return $docblock->getTagsByName($name);
-        });
+        return $this->docblocks->whereNotNull()
+                               ->flatMap(function ($docblock) use ($name) {
+                                   /** @var DocBlock $docblock */
+                                   return $docblock->getTagsByName($name);
+                               });
     }
 
     /**
@@ -125,10 +127,7 @@ class DocRoute
      */
     public function getTagsByClass($class): Collection
     {
-        return $this->docblocks->flatMap(function ($docblock) {
-            /** @var DocBlock $docblock */
-            return $docblock->getTags();
-        })->filter(function ($tag) use ($class) {
+        return $this->getTags()->filter(function ($tag) use ($class) {
             return $tag instanceof $class;
         });
     }

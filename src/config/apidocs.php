@@ -16,6 +16,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Route Matching
+    |--------------------------------------------------------------------------
+    |
+    | This option controls which routes should be used for the documentation
+    | generation based on their URI - using regular expressions. Use 'matches'
+    | for routes to whitelist, and 'hides' to blacklist (NB: hiding takes
+    | priority over matching).
+    |
+    */
+
+    'routes' => [
+        'matches' => [],
+        'hides'   => []
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Route Group By
     |--------------------------------------------------------------------------
     |
@@ -54,7 +71,7 @@ return [
     | This option allows registering documentation generation "middleware",
     | to have the final say on whether a route should be processed or not.
     | NB: These can be leveraged to inspect DocBlock conventions, check
-    | conflicts, etc.
+    | conflicts, raise exceptions to terminate the entire generation etc.
     |
     */
 
@@ -85,33 +102,20 @@ return [
     | Documentation Versions
     |--------------------------------------------------------------------------
     |
-    | This option allows registering documented route versions.
-    | NB: These can be leveraged to have different sets of routes associated
-    | with a specific version (key).
+    | This option allows version specific configurations.
+    | NB: At least one registered version is required!
     |
     */
 
     'versions' => [
 
         'v1' => [
-            /*
-            |--------------------------------------------------------------------------
-            | Route Matching
-            |--------------------------------------------------------------------------
-            |
-            | This option controls which routes should be used for the documentation
-            | generation based on their URI. Use 'matches' for routes to whitelist,
-            | and 'hides' to blacklist (NB: hiding takes priority over matching).
-            |
-            */
-
             'routes' => [
                 'matches' => [
-                    '*'
-                ],
-                'hides'   => []
-            ],
-        ],
+                    'api/*'
+                ]
+            ]
+        ]
 
     ]
 

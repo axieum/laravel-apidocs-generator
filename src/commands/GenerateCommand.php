@@ -8,6 +8,7 @@ use Axieum\ApiDocs\preflight\RoutePreflight;
 use Axieum\ApiDocs\util\DocRoute;
 use Axieum\ApiDocs\util\RouteHelper;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -70,7 +71,8 @@ class GenerateCommand extends Command
             /** @var Collection<DocRoute> $routes */
 
             // Group routes and sort alphabetically
-            $groups = $routes->groupBy(config("apidocs.groupBy", 'meta.groups.*.title'))->sortKeys();
+            $groups = $routes->groupBy($this->config_fallback($version, 'groupBy', 'meta.groups.*.title'))
+                             ->sortKeys();
 
             $this->info(__('apidocs::console.preprocess',
                 ['groups' => $groups->count(), 'routes' => $routes->count(), 'version' => $version]));
@@ -118,7 +120,7 @@ class GenerateCommand extends Command
      */
     private function getRoutes($version): Collection
     {
-        ['matches' => $matches, 'hides' => $hides] = config("apidocs.versions.${version}.routes");
+        ['matches' => $matches, 'hides' => $hides] = $this->config_merge($version, 'routes');
         return RouteHelper::getRoutes($matches, $hides)
                           ->map(function ($route) use ($version) {
                               return new DocRoute($route, $version);
@@ -135,7 +137,7 @@ class GenerateCommand extends Command
      */
     private function preflightRoutes(Collection $routes, $version): Collection
     {
-        $checks = config('apidocs.preflight', []);
+        $checks = $this->config_merge($version, 'preflight');
         Assert::allIsAOf($checks, RoutePreflight::class, 'Expected route preflight to be an instance of %2$s. Got: %s');
 
         return $routes->filter(function ($route) use ($checks) {
@@ -164,7 +166,7 @@ class GenerateCommand extends Command
      */
     private function injectDocBlocks(Collection $routes, $version): void
     {
-        $tags = config("apidocs.tags", []);
+        $tags = $this->config_merge($version, 'tags');
         Assert::allIsAOf(array_values($tags), Tag::class, 'Expected DocBlock tag to be an instance of %2$s. Got: %s');
         $factory = DocBlockFactory::createInstance($tags);
 
@@ -183,7 +185,7 @@ class GenerateCommand extends Command
      */
     private function mutateRoutes(Collection $routes, $version): void
     {
-        $mutators = config("apidocs.mutators", []);
+        $mutators = $this->config_merge($version, 'mutators');
         Assert::allIsAOf($mutators, RouteMutator::class, 'Expected route mutator to be an instance of %2$s. Got: %s');
 
         $routes->each(function ($route) use ($mutators) {
@@ -202,7 +204,7 @@ class GenerateCommand extends Command
     private function processRouteGroups(Collection $routeGroups, $version): array
     {
         /** @var string $output documentation output filename format */
-        $output = config("apidocs.output", 'docs/:name.md');
+        $output = $this->config_fallback($version, 'output', 'docs/:name.md');
 
         // Prepare progress bar
         $progress = $this->output->createProgressBar($routeGroups->count());
@@ -266,6 +268,37 @@ class GenerateCommand extends Command
         $progress->finish();
         $this->info(''); // NB: New line after progress bar
         return $table;
+    }
+
+    /**
+     * Retrieves and merges the given versioned configuration key with the root
+     * configuration values.
+     *
+     * @param mixed  $version config version
+     * @param string $key     config key
+     * @param mixed  $default default value if not set
+     * @return array merged config values
+     */
+    public static function config_merge($version, string $key, $default = []): array
+    {
+        return array_merge_recursive(
+            Arr::wrap(config("apidocs.${key}", [])),
+            Arr::wrap(config("apidocs.versions.${version}.${key}", $default))
+        );
+    }
+
+    /**
+     * Attempts to retrieve the version configured value first, falling back to
+     * the root configured value, and finally the provided value.
+     *
+     * @param mixed  $version config version
+     * @param string $key     config key
+     * @param mixed  $default default value if both, version and root values are not set
+     * @return mixed
+     */
+    public static function config_fallback($version, string $key, $default = null)
+    {
+        return config("apidocs.versions.${version}.${key}", config("apidocs.${key}", $default));
     }
 
     /**
