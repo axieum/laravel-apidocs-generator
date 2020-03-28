@@ -18,6 +18,7 @@ return [
 
     'requests' => [
         'title'      => 'Requests',
+        'empty'      => 'There are no documented requests.',
         'url'        => [
             'title' => 'URL Parameters'
         ],
@@ -34,6 +35,7 @@ return [
 
     'responses' => [
         'title'  => 'Responses',
+        'empty'  => 'There are no documented responses.',
         'status' => ':status :text|:status Unknown Status'
     ],
 

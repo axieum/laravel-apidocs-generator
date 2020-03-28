@@ -2,6 +2,8 @@
 
 namespace Axieum\ApiDocs\Commands;
 
+use Axieum\ApiDocs\formatter\DocFormatter;
+use Axieum\ApiDocs\formatter\MarkdownFormatter;
 use Axieum\ApiDocs\mutators\RouteMutator;
 use Axieum\ApiDocs\preflight\PreflightDegree;
 use Axieum\ApiDocs\preflight\RoutePreflight;
@@ -206,6 +208,10 @@ class GenerateCommand extends Command
         /** @var string $output documentation output filename format */
         $output = $this->config_fallback($version, 'output', 'docs/:name.md');
 
+        /** @var string $formatter documentation content formatter */
+        $formatter = $this->config_fallback($version, 'formatter', MarkdownFormatter::class);
+        Assert::isAOf($formatter, DocFormatter::class, 'Expected formatter to be an instance of %2$s. Got: %s');
+
         // Prepare progress bar
         $progress = $this->output->createProgressBar($routeGroups->count());
         $progress->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed:6s% • %message%');
@@ -237,7 +243,10 @@ class GenerateCommand extends Command
                     'version' => $version,
                     'routes'  => $routes,
                     'path'    => $path
-                ])->render(function ($view, $content) use ($key, $count, $path, &$table) {
+                ])->render(function ($view, $content) use ($formatter, $key, $count, $path, &$table) {
+                    // Format the content
+                    $content = call_user_func([$formatter, 'format'], $content);
+
                     // Persist rendered content to disk
                     File::ensureDirectoryExists(File::dirname($path));
                     $size = File::put($path, $content);

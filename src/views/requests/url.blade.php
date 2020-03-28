@@ -1,3 +1,2 @@
-#### @lang('apidocs::docs.requests.url.title')
-
+#### {{ __('apidocs::docs.requests.url.title') }}
 @include('apidocs::requests.partials._table', ['tags' => $tags])

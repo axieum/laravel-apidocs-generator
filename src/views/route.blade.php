@@ -1,28 +1,18 @@
 @php
-    /** @var \Axieum\ApiDocs\util\DocRoute $route */
-    $actionDocBlock = $route->getDocBlock('action');
+/** @var \Axieum\ApiDocs\util\DocRoute $route */
+$actionDocBlock = $route->getDocBlock('action');
+$description = (string) $actionDocBlock->getDescription();
 @endphp
 
 {{-- Title and URI --}}
 ## {{ $actionDocBlock->getSummary() ?: "`/{$route->uri()}`" }}
 > **{{ join(', ', $route->methods()) }}** `/{{ $route->uri() }}`
 
-{{-- Tags --}}
-@if($route->getMeta('auth'))
-:::info
-@lang('apidocs::docs.tags.auth')
-
-:::
-@endif
-
 {{-- Description --}}
-@php
-    $description = (string) $actionDocBlock->getDescription()
-@endphp
-@isset($description){{ $description }}@endif
+{{ $description }}
 
 {{-- Request Parameters --}}
 @include('apidocs::requests.index')
 
-{{-- Example responses --}}
+{{-- Example Responses --}}
 @include('apidocs::responses.index')

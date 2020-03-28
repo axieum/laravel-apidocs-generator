@@ -99,6 +99,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Content Formatter
+    |--------------------------------------------------------------------------
+    |
+    | This value references the documentation formatter responsible for
+    | formatting the rendered content before it is persisted to the disk.
+    | NB: This could be used to handle any regex replacements, etc.
+    |
+    */
+
+    'formatter' => \Axieum\ApiDocs\formatter\MarkdownFormatter::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Documentation Versions
     |--------------------------------------------------------------------------
     |
@@ -112,7 +125,7 @@ return [
         'v1' => [
             'routes' => [
                 'matches' => [
-                    'api/*'
+                    '*'
                 ]
             ]
         ]
