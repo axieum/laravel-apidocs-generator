@@ -27,5 +27,17 @@
         "ext-dom": "*",
         "ext-libxml": "*"
     },
-    "require-dev": {}
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "Axieum\\ApiDocs\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Axieum\\ApiDocs\\ApiDocsServiceProvider"
+            ]
+        }
+    }
 }
