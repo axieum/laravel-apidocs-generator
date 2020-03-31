@@ -125,7 +125,7 @@ return [
         'v1' => [
             'routes' => [
                 'matches' => [
-                    '*'
+                    'api/*'
                 ]
             ]
         ]

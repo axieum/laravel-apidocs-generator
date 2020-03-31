@@ -2,11 +2,13 @@
 
 namespace Axieum\ApiDocs\util;
 
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlockFactory;
+use ReflectionParameter;
 
 class RouteHelper
 {
@@ -74,6 +76,34 @@ class RouteHelper
             $controller = $route->getController();
             $action = (new \ReflectionClass($controller))->getMethod($route->getActionMethod());
             return $factory->create($action);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the DocBlock associated with the given route's form request.
+     *
+     * @param \Illuminate\Routing\Route $route   route with type-hinted form request
+     * @param DocBlockFactory|null      $factory overrides the default factory
+     * @return DocBlock|null DocBlock instance for route's form request or null if not exists
+     */
+    public static function getRequestDocBlock(\Illuminate\Routing\Route $route,
+                                              ?DocBlockFactory $factory = null): ?DocBlock
+    {
+        if (is_null($factory)) $factory = DocBlockFactory::createInstance();
+
+        try {
+            $controller = $route->getController();
+            $action = (new \ReflectionClass($controller))->getMethod($route->getActionMethod());
+
+            // Attempt to find the first Form Request parameter
+            $request = collect($action->getParameters())->first(function ($param) {
+                /** @var ReflectionParameter $param */
+                return optional($param->getClass())->isSubclassOf(FormRequest::class);
+            });
+
+            return $factory->create($request->getClass());
         } catch (\Exception $e) {
             return null;
         }

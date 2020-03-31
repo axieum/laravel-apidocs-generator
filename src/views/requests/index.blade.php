@@ -1,8 +1,11 @@
 @php
 /** @var \Axieum\ApiDocs\util\DocRoute $route */
-$urlTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\UrlTag::class);
-$queryTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\QueryTag::class);
-$bodyTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\BodyTag::class);
+
+// Fetch all unique (on parameter name) Parameter tags
+/** @noinspection PhpUndefinedMethodInspection higher order collection proxy used */
+$urlTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\UrlTag::class)->unique->getParamName();
+$queryTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\QueryTag::class)->unique->getParamName();
+$bodyTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\BodyTag::class)->unique->getParamName();
 @endphp
 
 ### {{ __('apidocs::docs.requests.title') }}

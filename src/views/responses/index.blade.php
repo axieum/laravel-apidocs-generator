@@ -1,6 +1,9 @@
 @php
 /** @var \Axieum\ApiDocs\util\DocRoute $route */
-$responseTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\ResponseTag::class);
+
+// Fetch all unique (on status code) Response tags and sort by the status code
+/** @noinspection PhpUndefinedMethodInspection higher order collection proxy used */
+$responseTags = $route->getTagsByClass(\Axieum\ApiDocs\tags\ResponseTag::class)->unique->getStatus()->sortBy->getStatus();
 @endphp
 
 ### {{ __('apidocs::docs.responses.title') }}

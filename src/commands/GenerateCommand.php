@@ -176,6 +176,7 @@ class GenerateCommand extends Command
             /** @var DocRoute $route */
             $route->addDocBlock('controller', RouteHelper::getControllerDocBlock($route->getRoute(), $factory));
             $route->addDocBlock('action', RouteHelper::getActionDocBlock($route->getRoute(), $factory));
+            $route->addDocBlock('request', RouteHelper::getRequestDocBlock($route->getRoute(), $factory));
         });
     }
 
