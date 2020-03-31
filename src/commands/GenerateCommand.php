@@ -1,6 +1,6 @@
 <?php
 
-namespace Axieum\ApiDocs\Commands;
+namespace Axieum\ApiDocs\commands;
 
 use Axieum\ApiDocs\formatter\DocFormatter;
 use Axieum\ApiDocs\formatter\MarkdownFormatter;

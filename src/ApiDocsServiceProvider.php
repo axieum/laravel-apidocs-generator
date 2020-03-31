@@ -2,7 +2,7 @@
 
 namespace Axieum\ApiDocs;
 
-use Axieum\ApiDocs\Commands\GenerateCommand;
+use Axieum\ApiDocs\commands\GenerateCommand;
 use Illuminate\Support\ServiceProvider;
 
 class ApiDocsServiceProvider extends ServiceProvider
